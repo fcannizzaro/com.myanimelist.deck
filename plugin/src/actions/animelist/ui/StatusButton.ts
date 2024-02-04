@@ -25,14 +25,19 @@ export const StatusButton = ({
     title: "",
     image: `./imgs/canvas/on/${anime.status}.png`,
     onPress: (btn) => {
-      const status = SwapStatus[anime.status];
-      if (status === "completed" && anime.total) {
+      anime.status = SwapStatus[anime.status];
+      if (
+        anime.status === "completed" &&
+        anime.total &&
+        anime.current !== anime.total
+      ) {
         anime.current = anime.total;
         reload();
+      } else {
+        grid.update(btn, {
+          image: `./imgs/canvas/on/${anime.status}.png`,
+        });
       }
-      grid.update(btn.idx!, {
-        image: `./imgs/canvas/on/${status}.png`,
-      });
       mal.sync(anime.id, "status");
     },
   };

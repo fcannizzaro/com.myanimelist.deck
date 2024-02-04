@@ -20,10 +20,17 @@ export const renderAnime = async (
     renderAnime(grid, btn, popup, beforePopup, reset);
   };
 
+  const refresh = () => {
+    const separator = anime.current > 999 ? " /\n" : " / ";
+    const title = [anime.current, anime.total ?? "?"].join(separator);
+    const idx = grid.buttons.findIndex((it) => it.type === "episodes");
+    return grid.update(idx, { title });
+  };
+
   const buttons = [
     StatusButton({ anime, grid, reload }),
     ScoreButton({ anime, grid }),
-    ...EpisodesButtons({ anime, grid, reload }),
+    ...EpisodesButtons({ anime, grid, reload, refresh }),
   ];
 
   // insert cover/title button
@@ -44,7 +51,12 @@ export const renderAnime = async (
   }
 
   // update popup buttons
-  Array.from(popup).forEach((it, i) => {
-    grid.update(it, buttons[i]);
-  });
+  await Promise.all(
+    Array.from(popup).map((it, i) => {
+      grid.update(it, buttons[i]);
+    })
+  );
+
+  // load anime details if not present
+  mal.loadAnime(anime.id).then(() => refresh());
 };

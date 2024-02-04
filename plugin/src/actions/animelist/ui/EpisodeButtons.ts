@@ -7,33 +7,26 @@ interface EpisodesButtonsProps {
   anime: Anime;
   grid: GridHelper;
   reload: () => void;
+  refresh: () => void;
 }
 
 export const EpisodesButtons = ({
   anime,
-  grid,
   reload,
+  refresh,
 }: EpisodesButtonsProps): Cell[] => {
-  const refresh = () => {
-    const separator = anime.current > 999 ? " /\n" : " / ";
-    const title = [anime.current, anime.total ?? "?"].join(separator);
-    const idx = grid.buttons.findIndex((it) => it.type === "episodes");
-    return grid.update(idx, { title });
-  };
-
   const onChange = (add: 1 | -1) => {
     const current = anime.current + add;
-    anime.current = current;
-    if (anime.total) {
-      anime.status = current > anime.total ? "completed" : anime.status;
+    anime.current = anime.total ? Math.min(current, anime.total) : current;
+    if (anime.total && current >= anime.total) {
+      anime.status = "completed";
       reload();
+    } else {
+      refresh();
     }
-    refresh();
+
     mal.sync(anime.id, "episodes");
   };
-
-  // load anime details if not present
-  mal.loadAnime(anime.id).then(refresh);
 
   return [
     {
